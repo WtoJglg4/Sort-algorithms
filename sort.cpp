@@ -56,6 +56,7 @@ int main(){
             SelectionSort(A, 0, len[i] - 1, selectionFile, lenFlag, comparations, swaps); //сортируем выбором
             auto end = steady_clock::now(); 
             auto duration = duration_cast<microseconds>(end - begin);
+            
             //печать маленького отсортированного массива в файл
             if (lenFlag){
                 fprintf(selectionFile, "Sorted\n");
