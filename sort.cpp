@@ -10,6 +10,7 @@ void SelectionSort(int[], int, int, FILE*, bool, int&, int&);
 
 //print
 void PrintArray(int[], int, int, FILE*);
+void PrintData(FILE* , int , int , int , int);
 
 //copy
 void CopyArray(int[], int[], int);
@@ -54,8 +55,10 @@ int main(){
             if (lenFlag){
                 fprintf(selectionFile, "Sorted\n");
                 PrintArray(A, 0, len[i] - 1, selectionFile);
-                fprintf(selectionFile, "Comparations: %d\tSwaps:%d\tTime:%d\n", comparations, swaps, duration.count());
+                
+                // fprintf(selectionFile, "Comparations: %d\tSwaps:%d\tTime:%d\n", comparations, swaps, duration.count());
             }
+            PrintData(selectionFile, len[i], comparations, swaps, duration.count());
 
             comparations = 0, swaps = 0;
             begin = steady_clock::now();
@@ -65,8 +68,10 @@ int main(){
             if (lenFlag){
                 fprintf(quickFile, "Sorted\n");
                 PrintArray(B, 0, len[i] - 1, quickFile);
-                fprintf(quickFile, "Comparations: %d\tSwaps:%d\tTime:%d\n", comparations, swaps, duration.count());
+                
+                // fprintf(quickFile, "Comparations: %d\tSwaps:%d\tTime:%d\n", comparations, swaps, duration.count());
             }
+            PrintData(quickFile, len[i], comparations, swaps, duration.count());
         }
         delete[] A;
         delete[] B;
@@ -144,6 +149,10 @@ void PrintArray(int Array[], int l, int r, FILE* file){
         }
     }
     fprintf(file, "]\n");
+}
+
+void PrintData(FILE* file, int len, int comparations, int swaps, int time){
+    fprintf(file, "Len: %d\tComparations: %d\tSwaps:%d\tTime:%d\n\n", len, comparations, swaps, time);
 }
 
 //copying from source array to destination array
