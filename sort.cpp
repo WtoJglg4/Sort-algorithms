@@ -24,23 +24,27 @@ void(*Sequence[SEQ_QUANT])(int[], int) = {RandomSequenceInt, AscendingSequenceIn
 
 
 int main(){
-    FILE* quickFile = fopen("output/quick.txt", "w"); 
+    //открытие файлов для записи
+    FILE* quickFile = fopen("output/quick.txt", "w");
     FILE* selectionFile = fopen("output/selection.txt", "w"); 
 
+    //длины сортируемых массивов
     int len[] = {15, 1000, 5000, 10000, 25000, 50000, 100000};
     bool lenFlag = true; //true только, когда длина = 15
 
+    //для массива каждой длины
     for (int i = 0; i < size(len); i++){
         int* A = new int[len[i]];
         int* B = new int[len[i]];
-        if (i != 0) lenFlag = false;
+        if (i != 0) lenFlag = false; //если длина > 15, не печатаем массивы и тд
         
         //генерация каждого вида последовательности
         for(int seqIndex = 0; seqIndex < SEQ_QUANT; seqIndex++){
-            int comparations = 0, swaps = 0;
-            Sequence[seqIndex](A, len[i]);
-            CopyArray(A, B, len[i]);
+            int comparations = 0, swaps = 0; //сравнения и свопы
+            Sequence[seqIndex](A, len[i]); //сгенерили необходимую последовательность
+            CopyArray(A, B, len[i]); //скопировали в другой массив, чтобы каждый сортировать разными функциями
 
+            //печать в файл маленького массива
             if (lenFlag){
                 fprintf(selectionFile, "Unsorted\n");
                 fprintf(quickFile, "Unsorted\n");
@@ -49,63 +53,72 @@ int main(){
             }
 
             auto begin = steady_clock::now(); 
-            SelectionSort(A, 0, len[i] - 1, selectionFile, lenFlag, comparations, swaps);
+            SelectionSort(A, 0, len[i] - 1, selectionFile, lenFlag, comparations, swaps); //сортируем выбором
             auto end = steady_clock::now(); 
             auto duration = duration_cast<microseconds>(end - begin);
+            //печать маленьуого отсортированного массива в файл
             if (lenFlag){
                 fprintf(selectionFile, "Sorted\n");
                 PrintArray(A, 0, len[i] - 1, selectionFile);
-                
-                // fprintf(selectionFile, "Comparations: %d\tSwaps:%d\tTime:%d\n", comparations, swaps, duration.count());
             }
+            //печать данных в файл
             PrintData(selectionFile, len[i], comparations, swaps, duration.count());
 
             comparations = 0, swaps = 0;
             begin = steady_clock::now();
-            QuickSort(B, 0, len[i] - 1, quickFile, lenFlag, comparations, swaps);
+            QuickSort(B, 0, len[i] - 1, quickFile, lenFlag, comparations, swaps); //меняем алгоритм сортировки
             end = steady_clock::now(); 
             duration = duration_cast<microseconds>(end - begin);
             if (lenFlag){
                 fprintf(quickFile, "Sorted\n");
                 PrintArray(B, 0, len[i] - 1, quickFile);
-                
-                // fprintf(quickFile, "Comparations: %d\tSwaps:%d\tTime:%d\n", comparations, swaps, duration.count());
             }
             PrintData(quickFile, len[i], comparations, swaps, duration.count());
         }
+        //освобождаем память
         delete[] A;
         delete[] B;
     }
+    //закрываем файлы
     fclose(quickFile);
     fclose(selectionFile);
 }
 
+//быстрая
 void QuickSort(int Array[], int l, int r, FILE* file, bool flag, int& comparations, int& swaps){
-    comparations++;
-    if (r - l < 1) return;
+    comparations++; //иф
+    if (r - l < 1) return; //остался один элемент
 
-    if (flag) PrintArray(Array, l, r, file);    
+    if (flag) PrintArray(Array, l, r, file); //здесь не инкрементируем comparations
+    //потому что этот иф не имеет отношения к алгоритму, он просто для вывода нужен
 
-    int Equals, Greater;
-    Partition(Array, l, r, Equals, Greater, comparations, swaps);
-    QuickSort(Array, l, Equals - 1, file, flag, comparations, swaps);
-    QuickSort(Array, Greater, r, file, flag, comparations, swaps);
+    int Equals, Greater; //индексы на массиве
+    //Equals указывает на первый элемент равный опорному(pivot)
+    //Greater указывает на первый элемент строго больший опорному(pivot)
+    
+    //назначение функции Partition - разбить массив на 3 части: элементы строго меньшие pivot, 
+    //равные(они уже заняли свои места в массиве) и строго большие pivot
+    Partition(Array, l, r, Equals, Greater, comparations, swaps); //разбиение массива на 3 части относительно опорного
+    QuickSort(Array, l, Equals - 1, file, flag, comparations, swaps); //сортируем элементы строго меньшие опорного
+    QuickSort(Array, Greater, r, file, flag, comparations, swaps); //сортируем элементы строго большие опорного
 }
 
+//разбиение
 void Partition(int Array[], int l,int r, int& Equals, int& Greater, int& comparations, int& swaps){
-    int n = r - l + 1, pivot = Array[rand() % n + l];
-    int Now = l, temp;
-    Equals = l;
+    //n - длина разбиваемой части массива, pivot - случайный опорный элемент из массива
+    int n = r - l + 1, pivot = Array[rand() % n + l]; 
+    int Now = l; //индекс текущего элемента
+    Equals = l; //стартуем с l
     Greater = l;
     
     while(Now <= r){
         comparations +=3; //цикл + 2 условия
-        if (Array[Now] == pivot){
+        if (Array[Now] == pivot){ //добавляем к элементам, равным опорному
             swap(Array[Now], Array[Greater]);
             Greater++;
             swaps++;
         }
-        if (Array[Now] < pivot){
+        if (Array[Now] < pivot){ //добавляем к элементам, строго меньшим опорного
             swap(Array[Now], Array[Greater]);
             swap(Array[Greater], Array[Equals]);
             Greater++;
@@ -117,22 +130,23 @@ void Partition(int Array[], int l,int r, int& Equals, int& Greater, int& compara
     comparations++;//последнее сравнение, когда не входим в цикл
 }
 
+//выбором
 void SelectionSort(int Array[], int l, int r, FILE* file, bool flag, int& comparations, int& swaps){
     int len = r - l + 1;
     for (int i = l; i < len - 1; i++){
-        comparations++;
-        if (flag){
+        comparations++; //сравнение в цикле
+        if (flag){ //игнорируем этот иф
         PrintArray(Array, l, r, file);    
         }
         
-        int smallest = i;
+        int smallest = i; //наименьший
         for (int j = i + 1; j < len; j++){
-            comparations+=2;
+            comparations+=2; //цикл + иф
             if (Array[j] <= Array[smallest]){
-                smallest = j;
+                smallest = j; //найти меньший либо равный iтому
             }
         }
-        swap(Array[i], Array[smallest]);
+        swap(Array[i], Array[smallest]); 
         comparations++;//последнее сравнение в цикле
         swaps++;
     }
@@ -151,6 +165,7 @@ void PrintArray(int Array[], int l, int r, FILE* file){
     fprintf(file, "]\n");
 }
 
+//printing statistics
 void PrintData(FILE* file, int len, int comparations, int swaps, int time){
     fprintf(file, "Len: %d\tComparations: %d\tSwaps:%d\tTime:%d\n\n", len, comparations, swaps, time);
 }
