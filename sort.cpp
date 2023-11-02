@@ -86,33 +86,33 @@ void QuickSort(int Array[], int l, int r, FILE* file, bool flag, int& comparatio
 
     if (flag) PrintArray(Array, l, r, file);    
 
-    int E, G;
-    Partition(Array, l, r, E, G, comparations, swaps);
-    QuickSort(Array, l, E - 1, file, flag, comparations, swaps);
-    QuickSort(Array, G, r, file, flag, comparations, swaps);
+    int Equals, Greater;
+    Partition(Array, l, r, Equals, Greater, comparations, swaps);
+    QuickSort(Array, l, Equals - 1, file, flag, comparations, swaps);
+    QuickSort(Array, Greater, r, file, flag, comparations, swaps);
 }
 
-void Partition(int Array[], int l,int r, int& E, int& G, int& comparations, int& swaps){
+void Partition(int Array[], int l,int r, int& Equals, int& Greater, int& comparations, int& swaps){
     int n = r - l + 1, pivot = Array[rand() % n + l];
-    int N = l, temp;
-    E = l;
-    G = l;
+    int Now = l, temp;
+    Equals = l;
+    Greater = l;
     
-    while(N <= r){
+    while(Now <= r){
         comparations +=3; //цикл + 2 условия
-        if (Array[N] == pivot){
-            swap(Array[N], Array[G]);
-            G++;
+        if (Array[Now] == pivot){
+            swap(Array[Now], Array[Greater]);
+            Greater++;
             swaps++;
         }
-        if (Array[N] < pivot){
-            swap(Array[N], Array[G]);
-            swap(Array[G], Array[E]);
-            G++;
-            E++;
+        if (Array[Now] < pivot){
+            swap(Array[Now], Array[Greater]);
+            swap(Array[Greater], Array[Equals]);
+            Greater++;
+            Equals++;
             swaps+=2;
         }
-        N++;
+        Now++;
     } 
     comparations++;//последнее сравнение, когда не входим в цикл
 }
